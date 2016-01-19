@@ -10,28 +10,27 @@
 #include <sys/resource.h>
 #include <time.h>
 
-// char* cuserid_wrapper() {
-//     char* val = cuserid(NULL);
-//     if (val == NULL) {
-//         perror("cuserid");
-//         exit(errno);
-//     } else {
-//         return val;
-//     }
-// }
+char* cuserid_wrapper() {
+  char* val = cuserid(NULL);
+  if (val == NULL) {
+    perror("cuserid");
+    exit(errno);
+  } else {
+    return val;
+  }
+}
 
 int main() {
   int pid = getpid();
   int parentPid = getppid();
   char hostName[1024];
-  //char* userId = cuserid_wrapper();
-  char userId[1024];
-
+  char* userId = cuserid_wrapper();
+  // char userId[1024];
+  
   gethostname(hostName, 1024);
-  cuserid(userId);
-
+  
   printf("Main PID: %d\n", pid);
   printf("Parent PID: %d\n", parentPid);
   printf("Hostname: %s\n", hostName);
-  printf("User ID: %s\n", cuserid);
+  printf("User ID: %s\n", userId);
 }
