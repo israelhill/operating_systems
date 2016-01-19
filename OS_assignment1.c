@@ -25,7 +25,6 @@ int main() {
   int parentPid = getppid();
   char hostName[1024];
   char* userId = cuserid_wrapper();
-  // char userId[1024];
   
   gethostname(hostName, 1024);
   
