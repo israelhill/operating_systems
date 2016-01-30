@@ -20,7 +20,7 @@ char* cuserid_wrapper() {
   }
 }
 
-int main() {
+void printParentInfo() {
   int pid = getpid();
   int parentPid = getppid();
   char hostName[1024];
@@ -28,7 +28,6 @@ int main() {
   time_t currenttime;
   time(&currenttime);
   char wd[1024];
-
   gethostname(hostName, 1024);
 
   printf("Main PID: %d\n", pid);
@@ -37,4 +36,8 @@ int main() {
   printf("User ID: %s\n", userId);
   printf("Current Time: %s\n", ctime(&currenttime));
   printf("Working directory %s\n", getcwd(wd, 1024));
+}
+
+int main() {
+  printParentInfo();
 }
