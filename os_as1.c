@@ -25,7 +25,8 @@ int main() {
   int parentPid = getppid();
   char hostName[1024];
   char* userId = cuserid_wrapper();
-  time_t currenttime = NULL;
+  time_t currenttime;
+  time(&currenttime);
 
   gethostname(hostName, 1024);
 
@@ -33,5 +34,5 @@ int main() {
   printf("Parent PID: %d\n", parentPid);
   printf("Hostname: %s\n", hostName);
   printf("User ID: %s\n", userId);
-  printf("Current Time: %s\n", ctime(currenttime));
+  printf("Current Time: %s\n", ctime(&currenttime));
 }
