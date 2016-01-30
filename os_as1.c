@@ -27,6 +27,7 @@ int main() {
   char* userId = cuserid_wrapper();
   time_t currenttime;
   time(&currenttime);
+  char wd[1024];
 
   gethostname(hostName, 1024);
 
@@ -35,4 +36,5 @@ int main() {
   printf("Hostname: %s\n", hostName);
   printf("User ID: %s\n", userId);
   printf("Current Time: %s\n", ctime(&currenttime));
+  printf("Working directory %s\n", getcwd(wd, 1024));
 }
