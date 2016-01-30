@@ -38,6 +38,25 @@ void printParentInfo() {
   printf("Working directory %s\n", getcwd(wd, 1024));
 }
 
+
+
 int main() {
+  pid_t child_a, child_b;
   printParentInfo();
+
+  child_a = fork();
+
+  if (child_a == 0) {
+    /* Child A code */
+    printf("I am child A: %d\n", getpid());
+  }
+  else {
+    child_b = fork();
+    if (child_b == 0) {
+        /* Child B code */
+        printf("I am child B: %d\n", getpid());
+    } else {
+        /* Parent Code */
+    }
+  }
 }
