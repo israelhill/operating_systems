@@ -32,4 +32,5 @@ int main() {
   printf("Parent PID: %d\n", parentPid);
   printf("Hostname: %s\n", hostName);
   printf("User ID: %s\n", userId);
+  printf("Current Time: %s\n", ctime(NULL));
 }
