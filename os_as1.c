@@ -1,5 +1,5 @@
 #define _XOPEN_SOURCE // required for cuserid to work
-//testing 
+
 // includes
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,9 +25,9 @@ int main() {
   int parentPid = getppid();
   char hostName[1024];
   char* userId = cuserid_wrapper();
-  
+
   gethostname(hostName, 1024);
-  
+
   printf("Main PID: %d\n", pid);
   printf("Parent PID: %d\n", parentPid);
   printf("Hostname: %s\n", hostName);
