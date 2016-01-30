@@ -57,6 +57,8 @@ int main() {
         printf("I am child B: %d\n", getpid());
     } else {
         /* Parent Code */
+        wait(NULL);
+        printf("Children are finished");
     }
   }
 }
