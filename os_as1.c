@@ -41,27 +41,30 @@ void printParentInfo() {
 
 
 int main() {
-  pid_t child_a, child_b;
+  int child_a, child_b;
   printParentInfo();
 
   child_a = fork();
-
-  if (child_a == 0) {
-    /* Child A code */
-    printf("I am child A: %d\n", getpid());
+  if(child_a < 0) {
+    printf("Error\n");
+    exit(1);
+  }
+  else if(child_a == 0) {
+    printf("I am child 1 with pid: %d\n", getpid());
     exit(0);
   }
   else {
     child_b = fork();
-    if (child_b == 0) {
-        /* Child B code */
-        printf("I am child B: %d\n", getpid());
-        exit(0);
-    } else {
-        /* Parent Code */
-        wait(NULL);
-        printf("Children are finished");
+    if(child_b < 0) {
+      printf("Error\n");
     }
+    else if(child_b == 0) {
+      printf("I am child 2 with pid: %d\n", getpid());
+      exit(0);
+    }
+
+    wait(NULL);
+    printf("Children finished\n");
+    return 1;
   }
-  return 0;
 }
