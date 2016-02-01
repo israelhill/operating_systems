@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <sys/resource.h>
 #include <time.h>
+#include <string.h>
 
 // char* cuserid_wrapper() {
 //   char* val = cuserid(NULL);
@@ -35,13 +36,40 @@ void printParentInfo() {
   printf("Hostname: %s\n", hostName);
   // printf("User ID: %s\n", userId);
   printf("Current Time: %s\n", ctime(&currenttime));
-  printf("Working directory %s\n", getcwd(wd, 1024));
+  printf("Working directory: %s\n", getcwd(wd, 1024));
+}
+
+void parent_procedure() {
+
+}
+
+void decreaseWhaleBy(int x) {
+	char *env_var = getenv("WHALE");
+	int new_env_var;
+
+	sscanf(env_var, "%d", &new_env_var);
+  printf("CURRENT VARIABLE: %s\n", env_var);
+	new_env_var = (int) new_env_var - x;
+
+  char prefix[] = "WHALE=";
+  char buffer[40];
+  sprintf(buffer, "%s%d", prefix, new_env_var);
+  printf("NEW ENV VSRISBLE: %d\n", new_env_var);
+
+	int ret_val = putenv(buffer);
+  printf("ENV_VAR is %s\n", getenv("WHALE"));
+	if(ret_val < 0) {
+		fprintf(stderr, "ERROR setting environment variable");
+		_exit(errno);
+	}
 }
 
 
 
 int main() {
   int child_a, child_b;
+
+  putenv("WHALE=7");
   printParentInfo();
 
   child_a = fork();
@@ -71,6 +99,10 @@ int main() {
     wait(NULL);
     sleep(3);
     printf("Children finished\n");
+    char* env_var;
+    env_var = getenv("WHALE");
+    printf("WHALE is %s\n", env_var);
+    decreaseWhaleBy(3);
     return 1;
   }
 }
