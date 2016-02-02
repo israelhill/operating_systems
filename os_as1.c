@@ -89,15 +89,27 @@ void print_child(char* caller) {
 	fflush(stdout);
 }
 
+char* check_getenv(char* variable) {
+  char* ret_val;
+  ret_val = getenv(variable);
+  if(ret_val == NULL) {
+    perror("Could not locate env. variable!");
+    exit(-1);
+  }
+  else {
+    return ret_val;
+  }
+}
+
 void print_whale(char* caller) {
   char* env_var;
-  env_var = getenv("WHALE");
+  env_var = check_getenv("WHALE");
   printf("%s: WHALE is %s\n", caller, env_var);
   fflush(stdout);
 }
 
 void decreaseWhaleBy(int x, char* caller) {
-	char* env_var = getenv("WHALE");
+	char* env_var = check_getenv("WHALE");
 	int new_env_var;
 
 	sscanf(env_var, "%d", &new_env_var);
@@ -114,7 +126,7 @@ void decreaseWhaleBy(int x, char* caller) {
 		exit(errno);
 	}
   else {
-    fprintf(stdout, "%s: WHALE is %s\n", caller, getenv("WHALE"));
+    fprintf(stdout, "%s: WHALE is %s\n", caller, check_getenv("WHALE"));
   	fflush(stdout);
   }
 }
