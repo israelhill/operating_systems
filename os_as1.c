@@ -11,7 +11,7 @@
 #include <time.h>
 #include <string.h>
 
-char* cuserid_wrapper() {
+char* checkUserId() {
   char* val = cuserid(NULL);
   if (val == NULL) {
     perror("cuserid");
@@ -21,14 +21,35 @@ char* cuserid_wrapper() {
   }
 }
 
+int checkFork(int syscall) {
+  if (syscall < 0) {
+    perror("Error while forking child process!");
+    exit(errno);
+  }
+  else {
+    return syscall;
+    }
+}
+
+time_t checkTime(time_t ctime) {
+  time_t val = time(&ctime);
+  if (val == ((time_t) -1)) {
+    perror("Error in time call");
+    exit(errno);
+    }
+    else {
+      return val;
+    }
+}
+
 void printParentInfo() {
   char* caller = "P0";
   int pid = getpid();
   int parentPid = getppid();
   char hostName[1024];
-  char* userId = cuserid_wrapper();
+  char* userId = checkUserId();
   time_t currenttime;
-  time(&currenttime);
+  checktime(currenttime);
   char wd[1024];
   gethostname(hostName, 1024);
 
@@ -131,15 +152,19 @@ void child_b_procedure() {
 int main() {
   pid_t child;
 
-  putenv("WHALE=7");
+  int ret_val;
+  if(ret_val = putenv("WHALE=7") != 0) {
+    perror("An error occurred while setting env. variable!");
+    exit(-1);
+  }
   printParentInfo();
 
-  child = fork();
+  child = checkFork(fork());
   if(child == 0) {
     child_a_procedure();
   }
 
-  child = fork();
+  child = checkFork(fork());
   if(child == 0) {
     child_b_procedure();
   }
