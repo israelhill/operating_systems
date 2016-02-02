@@ -23,6 +23,14 @@ char* checkUserId() {
   }
 }
 
+void check_fflush() {
+  int ret_val = fflush(stdout);
+  if(ret_val != 0) {
+    perror("Error occurred while flushing!");
+    exit(errno);
+  }
+}
+
 void check_chdir(char* directory) {
   int val = chdir(directory);
 
@@ -90,12 +98,12 @@ void printParentInfo() {
   fprintf(stdout, "%s: User ID: %s\n", caller, userId);
   fprintf(stdout, "%s: Current Time: %s\n", caller, get_ctime());
   fprintf(stdout, "%s: Working directory: %s\n", caller, check_getcwd(wd));
-  fflush(stdout);
+  check_fflush();
 }
 
 void print_child(char* caller) {
 	fprintf(stdout, "I am child %s, my PID is %d. My Parent is %d.\n", caller, getpid(), getppid());
-	fflush(stdout);
+	check_fflush();
 }
 
 char* check_getenv(char* variable) {
@@ -114,7 +122,7 @@ void print_whale(char* caller) {
   char* env_var;
   env_var = check_getenv("WHALE");
   printf("%s: WHALE is %s\n", caller, env_var);
-  fflush(stdout);
+  check_fflush();
 }
 
 void decreaseWhaleBy(int x, char* caller) {
@@ -136,7 +144,7 @@ void decreaseWhaleBy(int x, char* caller) {
 	}
   else {
     fprintf(stdout, "%s: WHALE is %s\n", caller, check_getenv("WHALE"));
-  	fflush(stdout);
+  	check_fflush();
   }
 }
 
@@ -188,7 +196,7 @@ void child_b_procedure() {
   sleep(3);
   char wd[1024];
   fprintf(stdout, "%s: Working directory: %s\n", caller, check_getcwd(wd));
-  fflush(stdout);
+  check_fflush();
 
   exit(0);
 }
