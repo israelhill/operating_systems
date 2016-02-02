@@ -168,6 +168,15 @@ void parent_procedure() {
 
   sleep(3);
   decreaseWhaleBy(3, caller); //whale 1
+
+  pid_t val1 = wait(NULL);
+  pid_t val2 = wait(NULL);
+  decreaseWhaleBy(1, caller);
+
+  if(val1 == -1 || val2 == -1) {
+    perror("An error occured while waiting for child to terminate!");
+    exit(-1);
+  }
 }
 
 void child_a_procedure() {
@@ -232,13 +241,5 @@ int main() {
   }
 
   parent_procedure();
-  pid_t val1 = wait(NULL);
-  pid_t val2 = wait(NULL);
-  decreaseWhaleBy(1, caller);
-
-  if(val1 == -1 || val2 == -1) {
-    perror("An error occured while waiting for child to terminate!");
-    exit(-1);
-  }
   return 0;
 }
