@@ -23,6 +23,15 @@ char* checkUserId() {
   }
 }
 
+void check_chdir(char* directory) {
+  int val = chdir(directory);
+
+  if(val == -1){
+    perror("An error occurred while attempting to change directory!");
+    exit(errno);
+  }
+}
+
 char* check_getcwd(char* buffer) {
   char wd[1024];
   char* ret_val = getcwd(wd, 1024);
@@ -157,7 +166,7 @@ void child_a_procedure() {
   decreaseWhaleBy(3, caller);
 
   sleep(3);
-  chdir("/");
+  check_chdir("/");
   char* command = "/bin/ls";
   execl(command, command, "-la", (char*)NULL);
 
