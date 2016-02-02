@@ -23,6 +23,19 @@ char* checkUserId() {
   }
 }
 
+char* check_gwd(char buffer) {
+  char wd[1024];
+  char* ret_val = getcwd(wd, 1024);
+
+  if(ret_val == NULL) {
+    perror("An error occurred while getting working directory!");
+    exit(errno);
+  }
+  else {
+    return ret_val;
+  }
+}
+
 char* get_ctime() {
   char* ret_val = ctime(&currenttime);
   if(ret_val == NULL) {
@@ -67,7 +80,7 @@ void printParentInfo() {
   fprintf(stdout, "%s: Hostname: %s\n", caller, hostName);
   fprintf(stdout, "%s: User ID: %s\n", caller, userId);
   fprintf(stdout, "%s: Current Time: %s\n", caller, get_ctime());
-  fprintf(stdout, "%s: Working directory: %s\n", caller, getcwd(wd, 1024));
+  fprintf(stdout, "%s: Working directory: %s\n", caller, check_getcwd(wd));
   fflush(stdout);
 }
 
@@ -153,7 +166,7 @@ void child_b_procedure() {
 
   sleep(3);
   char wd[1024];
-  fprintf(stdout, "%s: Working directory: %s\n", caller, getcwd(wd, 1024));
+  fprintf(stdout, "%s: Working directory: %s\n", caller, check_getcwd(wd));
   fflush(stdout);
 
   exit(0);
