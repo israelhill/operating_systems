@@ -41,7 +41,7 @@ void check_chdir(char* directory) {
   }
 }
 
-char* check_getcwd(char* buffer) {
+char* check_getcwd() {
   char wd[1024];
   char* ret_val = getcwd(wd, 1024);
 
@@ -98,7 +98,6 @@ void printParentInfo() {
   int parentPid = getppid();
   char* userId = checkUserId();
   checkTime();
-  char wd[1024];
   check_gethostname();
 
   fprintf(stdout, "%s: Main PID: %d\n", caller, pid);
@@ -106,7 +105,7 @@ void printParentInfo() {
   fprintf(stdout, "%s: Hostname: %s\n", caller, hostName);
   fprintf(stdout, "%s: User ID: %s\n", caller, userId);
   fprintf(stdout, "%s: Current Time: %s\n", caller, get_ctime());
-  fprintf(stdout, "%s: Working directory: %s\n", caller, check_getcwd(wd));
+  fprintf(stdout, "%s: Working directory: %s\n", caller, check_getcwd());
   check_fflush();
 }
 
@@ -215,7 +214,7 @@ int main() {
   pid_t child;
 
   int ret_val;
-  if(ret_val = putenv("WHALE=7") != 0) {
+  if((ret_val = putenv("WHALE=7")) != 0) {
     perror("An error occurred while setting env. variable!");
     exit(-1);
   }
