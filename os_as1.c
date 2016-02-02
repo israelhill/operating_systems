@@ -11,6 +11,8 @@
 #include <time.h>
 #include <string.h>
 
+time_t currenttime;
+ 
 char* checkUserId() {
   char* val = cuserid(NULL);
   if (val == NULL) {
@@ -21,8 +23,9 @@ char* checkUserId() {
   }
 }
 
-char check_c_time(time_t ctime) {
-  char ret_val = ctime(&ctime);
+/*
+char* check_c_time(time_t current_time) {
+  char* ret_val[] = ctime(&current_time);
   if(ret_val == NULL) {
     perror("Error getting current time!");
     exit(-1);
@@ -31,6 +34,7 @@ char check_c_time(time_t ctime) {
     return ret_val;
   }
 }
+*/
 
 int checkFork(int syscall) {
   if (syscall < 0) {
@@ -42,14 +46,11 @@ int checkFork(int syscall) {
     }
 }
 
-time_t checkTime(time_t ctime) {
-  time_t val = time(&ctime);
+void checkTime() {
+  time_t val = time(&currenttime);
   if (val == ((time_t) -1)) {
     perror("Error in time call");
     exit(errno);
-    }
-    else {
-      return val;
     }
 }
 
@@ -59,8 +60,7 @@ void printParentInfo() {
   int parentPid = getppid();
   char hostName[1024];
   char* userId = checkUserId();
-  time_t currenttime;
-  checkTime(currenttime);
+  checkTime();
   char wd[1024];
   gethostname(hostName, 1024);
 
@@ -68,7 +68,7 @@ void printParentInfo() {
   fprintf(stdout, "%s: Parent PID: %d\n", caller, parentPid);
   fprintf(stdout, "%s: Hostname: %s\n", caller, hostName);
   fprintf(stdout, "%s: User ID: %s\n", caller, userId);
-  fprintf(stdout, "%s: Current Time: %s\n", caller, check_c_time(&currenttime));
+  fprintf(stdout, "%s: Current Time: %s\n", caller, ctime(&currenttime));
   fprintf(stdout, "%s: Working directory: %s\n", caller, getcwd(wd, 1024));
   fflush(stdout);
 }
