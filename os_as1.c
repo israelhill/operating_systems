@@ -22,6 +22,7 @@
 // }
 
 void printParentInfo() {
+  char* caller = "P0";
   int pid = getpid();
   int parentPid = getppid();
   char hostName[1024];
@@ -31,12 +32,13 @@ void printParentInfo() {
   char wd[1024];
   gethostname(hostName, 1024);
 
-  printf("Main PID: %d\n", pid);
-  printf("Parent PID: %d\n", parentPid);
-  printf("Hostname: %s\n", hostName);
-  // printf("User ID: %s\n", userId);
-  printf("Current Time: %s\n", ctime(&currenttime));
-  printf("Working directory: %s\n", getcwd(wd, 1024));
+  fprintf(stdout, "%s: Main PID: %d\n", caller, pid);
+  fprintf(stdout, "%s: Parent PID: %d\n", caller, parentPid);
+  fprintf(stdout, "%s: Hostname: %s\n", caller, hostName);
+  // fprintf(stdout, "%s: User ID: %s\n", caller, userId);
+  fprintf(stdout, "%s: Current Time: %s\n", caller, ctime(&currenttime));
+  fprintf(stdout, "%s: Working directory: %s\n", caller, getcwd(wd, 1024));
+  fflush(stdout);
 }
 
 void print_child(char* caller) {
@@ -98,6 +100,11 @@ void child_a_procedure() {
   sleep(3);
   decreaseWhaleBy(3, caller);
 
+  sleep(3);
+  chdir("/");
+  char* command = "/bin/ls";
+  execl(command, command, "-la", (char*)NULL);
+
   exit(0);
 }
 
@@ -112,6 +119,11 @@ void child_b_procedure() {
 
   sleep(3);
   decreaseWhaleBy(3, caller);
+
+  sleep(3);
+  char wd[1024];
+  fprintf(stdout, "%s: Working directory: %s\n", caller, getcwd(wd, 1024));
+  fflush(stdout);
 
   exit(0);
 }
