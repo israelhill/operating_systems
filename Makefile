@@ -11,3 +11,6 @@ os_as1.o: os_as1.c
 
 clean:
 	rm -f eecs338_hw01 os_as1.o
+
+run:
+	./eecs338_hw01

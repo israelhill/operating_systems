@@ -238,5 +238,5 @@ int main() {
     perror("An error occured while waiting for child to terminate!");
     exit(-1);
   }
-  return 1;
+  return 0;
 }
