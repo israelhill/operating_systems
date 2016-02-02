@@ -76,7 +76,7 @@ void decreaseWhaleBy(int x, char* caller) {
 void parent_procedure() {
   char* caller = "P0";
 
-  sleep(1);
+  sleep(3);
   print_whale(caller); //print whale 7
 
   sleep(3);
@@ -92,7 +92,7 @@ void child_a_procedure() {
   sleep(1);
   print_child(caller);
 
-  sleep(2);
+  sleep(3);
   decreaseWhaleBy(1, caller);
 
   sleep(3);
@@ -104,7 +104,7 @@ void child_a_procedure() {
 void child_b_procedure() {
   char* caller = "C2";
 
-  sleep(1);
+  sleep(2);
   print_child(caller);
 
   sleep(3);
