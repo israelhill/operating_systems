@@ -12,6 +12,7 @@
 #include <string.h>
 
 time_t currenttime;
+char hostName[1024];
 
 char* checkUserId() {
   char* val = cuserid(NULL);
@@ -82,15 +83,23 @@ void checkTime() {
     }
 }
 
+void check_gethostname() {
+  int val = gethostname(hostName, 1024);
+
+  if(val == -1) {
+    perror("An error occurred while getting the hostname");
+    exit(errno);
+  }
+}
+
 void printParentInfo() {
   char* caller = "P0";
   int pid = getpid();
   int parentPid = getppid();
-  char hostName[1024];
   char* userId = checkUserId();
   checkTime();
   char wd[1024];
-  gethostname(hostName, 1024);
+  check_gethostname();
 
   fprintf(stdout, "%s: Main PID: %d\n", caller, pid);
   fprintf(stdout, "%s: Parent PID: %d\n", caller, parentPid);
