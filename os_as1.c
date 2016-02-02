@@ -23,7 +23,7 @@ char* checkUserId() {
   }
 }
 
-char* check_gcwd(char buffer) {
+char* check_getcwd(char* buffer) {
   char wd[1024];
   char* ret_val = getcwd(wd, 1024);
 
