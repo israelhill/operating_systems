@@ -221,7 +221,6 @@ void child_b_procedure() {
 
 int main() {
   pid_t child;
-  char* caller = "P0";
 
   int ret_val;
   if((ret_val = putenv("WHALE=7")) != 0) {
