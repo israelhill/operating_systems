@@ -144,7 +144,7 @@ void decreaseWhaleBy(int x, char* caller) {
 	}
   else {
     char* whale = check_getenv("WHALE");
-    fprintf(stdout, "%s: %s Shrimps. (WHALE env. variable is %s)\n", caller, whale, whale);
+    fprintf(stdout, "%s: %s Shrimps (WHALE env. variable is %s)\n", caller, whale, whale);
   	check_fflush();
   }
 }
