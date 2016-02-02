@@ -233,6 +233,7 @@ int main() {
   parent_procedure();
   pid_t val1 = wait(NULL);
   pid_t val2 = wait(NULL);
+  decreaseWhaleBy(1);
 
   if(val1 == -1 || val2 == -1) {
     perror("An error occured while waiting for child to terminate!");
