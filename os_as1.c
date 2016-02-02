@@ -49,7 +49,7 @@ void printParentInfo() {
   char hostName[1024];
   char* userId = checkUserId();
   time_t currenttime;
-  checktime(currenttime);
+  checkTime(currenttime);
   char wd[1024];
   gethostname(hostName, 1024);
 
@@ -71,6 +71,7 @@ void print_whale(char* caller) {
   char* env_var;
   env_var = getenv("WHALE");
   printf("%s: WHALE is %s\n", caller, env_var);
+  fflush(stdout);
 }
 
 void decreaseWhaleBy(int x, char* caller) {
@@ -87,8 +88,8 @@ void decreaseWhaleBy(int x, char* caller) {
 	int ret_val = putenv(buffer);
 
 	if(ret_val < 0) {
-		fprintf(stderr, "ERROR setting environment variable");
-		_exit(errno);
+		perror("ERROR setting environment variable");
+		exit(errno);
 	}
   else {
     fprintf(stdout, "%s: WHALE is %s\n", caller, getenv("WHALE"));
