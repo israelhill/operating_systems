@@ -11,22 +11,22 @@
 #include <time.h>
 #include <string.h>
 
-// char* cuserid_wrapper() {
-//   char* val = cuserid(NULL);
-//   if (val == NULL) {
-//     perror("cuserid");
-//     exit(errno);
-//   } else {
-//     return val;
-//   }
-// }
+char* cuserid_wrapper() {
+  char* val = cuserid(NULL);
+  if (val == NULL) {
+    perror("cuserid");
+    exit(errno);
+  } else {
+    return val;
+  }
+}
 
 void printParentInfo() {
   char* caller = "P0";
   int pid = getpid();
   int parentPid = getppid();
   char hostName[1024];
-  // char* userId = cuserid_wrapper();
+  char* userId = cuserid_wrapper();
   time_t currenttime;
   time(&currenttime);
   char wd[1024];
@@ -35,7 +35,7 @@ void printParentInfo() {
   fprintf(stdout, "%s: Main PID: %d\n", caller, pid);
   fprintf(stdout, "%s: Parent PID: %d\n", caller, parentPid);
   fprintf(stdout, "%s: Hostname: %s\n", caller, hostName);
-  // fprintf(stdout, "%s: User ID: %s\n", caller, userId);
+  fprintf(stdout, "%s: User ID: %s\n", caller, userId);
   fprintf(stdout, "%s: Current Time: %s\n", caller, ctime(&currenttime));
   fprintf(stdout, "%s: Working directory: %s\n", caller, getcwd(wd, 1024));
   fflush(stdout);
