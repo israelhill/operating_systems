@@ -100,7 +100,7 @@ void printParentInfo() {
   checkTime();
   check_gethostname();
 
-  fprintf(stdout, "%s: Main PID: %d\n", caller, pid);
+  fprintf(stdout, "\n%s: Main PID: %d\n", caller, pid);
   fprintf(stdout, "%s: Parent PID: %d\n", caller, parentPid);
   fprintf(stdout, "%s: Hostname: %s\n", caller, hostName);
   fprintf(stdout, "%s: User ID: %s\n", caller, userId);
@@ -141,7 +141,7 @@ void decreaseWhaleBy(int x, char* caller) {
 	new_env_var = (int) new_env_var - x;
 
   char prefix[] = "WHALE=";
-  char buffer[40];
+  char buffer[1024];
   sprintf(buffer, "%s%d", prefix, new_env_var);
 
 	int ret_val = putenv(buffer);
