@@ -21,6 +21,17 @@ char* checkUserId() {
   }
 }
 
+char check_c_time(time_t ctime) {
+  char ret_val = ctime(&ctime);
+  if(ret_val == NULL) {
+    perror("Error getting current time!");
+    exit(-1);
+  }
+  else {
+    return ret_val;
+  }
+}
+
 int checkFork(int syscall) {
   if (syscall < 0) {
     perror("Error while forking child process!");
@@ -57,7 +68,7 @@ void printParentInfo() {
   fprintf(stdout, "%s: Parent PID: %d\n", caller, parentPid);
   fprintf(stdout, "%s: Hostname: %s\n", caller, hostName);
   fprintf(stdout, "%s: User ID: %s\n", caller, userId);
-  fprintf(stdout, "%s: Current Time: %s\n", caller, ctime(&currenttime));
+  fprintf(stdout, "%s: Current Time: %s\n", caller, check_c_time(&currenttime));
   fprintf(stdout, "%s: Working directory: %s\n", caller, getcwd(wd, 1024));
   fflush(stdout);
 }
