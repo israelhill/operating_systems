@@ -29,14 +29,16 @@ void mapperWork(int mapperPipe) {
         int p = read_msg[i] - ALPHA_OFFSET;
         char letter = read_msg[i];
         printf("Pipe array index: %d. Character: %c\n", p, letter);
+        printf("Length of character: %lu\n", strlen(&letter));
 
         close(reducer_pipes[0][READ_END]);
-        write(reducer_pipes[0][WRITE_END], &letter, strlen(&letter) + 1);
-        close(reducer_pipes[0][WRITE_END]);
+        write(reducer_pipes[0][WRITE_END], &letter, 1);
+        //close(reducer_pipes[0][WRITE_END]);
 
       }
   }
 
+  close(reducer_pipes[0][WRITE_END]);
   exit(EXIT_SUCCESS);
 }
 
