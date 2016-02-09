@@ -19,35 +19,36 @@ void mapperWork(int mapperPipe) {
   // read the line
   close(mapper_pipes[mapperPipe][WRITE_END]);
   read(mapper_pipes[mapperPipe][READ_END], read_msg, BUFFER_SIZE);
-  //printf("MAPPER %d: %s\n", mapperPipe, read_msg);
+  printf("MAPPER %d: %s\n", mapperPipe, read_msg);
   close(mapper_pipes[mapperPipe][READ_END]);
 
   // send characters to the correct reducer
   for(int i = 0; i < strlen(read_msg); i++){
       // if it is a lowercase letter, send to correct pipe
       if(read_msg[i] >= ALPHA_OFFSET && read_msg[i] < ALPHA_OFFSET + LETTERS){
-        int p = ALPHA_OFFSET-read_msg[i];
-        printf("The index: %d\n", p);
-        char letter = read_msg[i] + '0';
-        printf("The letter %c\n", letter);
-        close(reducer_pipes[p][READ_END]);
-        write(reducer_pipes[p][WRITE_END], &letter, 2);
-        close(reducer_pipes[p][WRITE_END]);
-      }
-    }
+        int p = read_msg[i] - ALPHA_OFFSET;
+        char letter = read_msg[i];
+        printf("Pipe array index: %d. Character: %c\n", p, letter);
 
-  exit(0);
+        close(reducer_pipes[0][READ_END]);
+        write(reducer_pipes[0][WRITE_END], &letter, strlen(&letter) + 1);
+        close(reducer_pipes[0][WRITE_END]);
+
+      }
+  }
+
+  exit(EXIT_SUCCESS);
 }
 
 void reducerWork(int reducerPipe) {
-  char read_msg[BUFFER_SIZE];
-  printf("Reducer PID: %d\n", getpid());
+  char buf;
+  printf("Reducer pid: %d, reading from array index: %d\n", getpid(), reducerPipe);
 
   sleep(1);
   close(reducer_pipes[reducerPipe][WRITE_END]);
 
-  while (read(reducer_pipes[reducerPipe][READ_END], read_msg, 1) > 0) {
-    printf("REDUCER Char: %s\n", read_msg);
+  while(read(reducer_pipes[0][READ_END], &buf, 1) == 1) {
+    printf("REDUCER Char: %c\n", buf);
     sleep(1);
   }
 
@@ -56,9 +57,10 @@ void reducerWork(int reducerPipe) {
 }
 
 void doParent() {
-  for(int i = 0; i < 4; i++) {
+  for(int i = 0; i < 1; i++) {
     close(mapper_pipes[i][READ_END]);
     write(mapper_pipes[i][WRITE_END], lines[i], strlen(lines[i])+1);
+    //write(mapper_pipes[i][WRITE_END], "a", strlen("a")+1);
     close(mapper_pipes[i][WRITE_END]);
   }
 }
@@ -86,7 +88,7 @@ int main() {
   }
 
   // create array of reducer pipes
-  for(int i = 0; i < 26; i++) {
+  for(int i = 0; i < 1; i++) {
     if(pipe(reducer_pipes[i]) == -1) {
       perror("ERROR creating pipe!");
       exit(-1);
@@ -94,7 +96,7 @@ int main() {
   }
 
   // create mapper processes
-  for(int i = 0; i < 4; i++) {
+  for(int i = 0; i < 1; i++) {
     pid_t child = fork();
 
     if(child < 0) {
@@ -108,7 +110,7 @@ int main() {
   }
 
   // create reducer processes
-  for(int i = 0; i < 26; i++) {
+  for(int i = 0; i < 1; i++) {
     pid_t child = fork();
 
     if(child < 0) {
