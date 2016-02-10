@@ -31,6 +31,7 @@ void printCounts() {
 void mapperWork(int mapperPipe) {
   char read_msg[BUFFER_SIZE];
   int current_pipe;
+  printf("mapper: %d\n", getpid());
 
   // read the line
   close(mapper_pipes[mapperPipe][WRITE_END]);
@@ -59,6 +60,7 @@ void mapperWork(int mapperPipe) {
 
 void reducerWork(int reducerPipe) {
   char buf;
+  printf("reducer: %d\n", getpid());
 
   printf("Reducer Here!!");
 
@@ -79,7 +81,6 @@ void doParent() {
   for(int i = 0; i < 4; i++) {
     close(mapper_pipes[i][READ_END]);
     write(mapper_pipes[i][WRITE_END], lines[i], strlen(lines[i])+1);
-    //write(mapper_pipes[i][WRITE_END], "a", strlen("a")+1);
     close(mapper_pipes[i][WRITE_END]);
   }
 }
@@ -90,30 +91,33 @@ int main() {
   FILE *input_file = fopen("input.txt", "r");
 
   // write lines to an array
-  int i = 0;
+  int line = 0;
   while(fgets(buffer, BUFFER_SIZE, input_file) > 0) {
-    lines[i] = strdup(buffer);
-    i++;
+    lines[line] = strdup(buffer);
+    line++;
   }
 
   // create array of mapper pipes
-  for(int i = 0; i < 4; i++) {
-    if(pipe(mapper_pipes[i]) == -1) {
+  int mapperArrays;
+  for(mapperArrays = 0; mapperArrays < 4; mapperArrays++) {
+    if(pipe(mapper_pipes[mapperArrays]) == -1) {
       perror("ERROR creating pipe!");
       exit(-1);
     }
   }
 
   // create array of reducer pipes
-  for(int i = 0; i < 26; i++) {
-    if(pipe(reducer_pipes[i]) == -1) {
+  int reducerArrays;
+  for(reducerArrays = 0; reducerArrays < 26; reducerArrays++) {
+    if(pipe(reducer_pipes[reducerArrays]) == -1) {
       perror("ERROR creating pipe!");
       exit(-1);
     }
   }
 
   // create mapper processes
-  for(int i = 0; i < 4; i++) {
+  int mapNum;
+  for(mapNum = 0; mapNum < 4; mapNum++) {
     pid_t child = fork();
 
     if(child < 0) {
@@ -121,18 +125,16 @@ int main() {
       exit(-1);
     }
     else if(child == 0) { // mapper process
-      printf("calling mapper work\n");
-      int mapperPipe = i;
-      //mapperPids[i] = getpid();
+      int mapperPipe = mapNum;
       mapperWork(mapperPipe);
     }
     else { // parent
-
     }
   }
 
   // create reducer processes
-  for(int i = 0; i < 26; i++) {
+  int redNum;
+  for(redNum = 0; redNum < 26; redNum++) {
     pid_t child = fork();
 
     if(child < 0) {
@@ -140,15 +142,17 @@ int main() {
       exit(-1);
     }
     else if(child == 0) { // reducer process
-      int reducerPipe = i;
-      printf("Reducer pid: %d\n", getpid());
-      //reducerPids[i] = getpid();
+      int reducerPipe = redNum;
       reducerWork(reducerPipe);
+    }
+    else { // parent
     }
   }
 
   doParent();
-  wait(NULL);
+  for(int z = 0; z < 30; z++) {
+    wait(NULL);
+  }
   //printCounts();
 
   return 1;
