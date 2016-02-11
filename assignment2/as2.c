@@ -12,19 +12,13 @@
 int mapper_pipes[4][2];
 int reducer_pipes[26][2];
 char* lines[4] = {};
-char counts[LETTERS] = {0};
+int count = 0;
 int mapperPids[4];
 int reducerPids[26];
 
 void close_reducer_pipes() {
   for(int i = 0; i < 26; i++) {
     close(reducer_pipes[i][WRITE_END]);
-  }
-}
-
-void printCounts() {
-  for(int i = 0; i < LETTERS; i++) {
-    printf("count %c: %d\n", i + ALPHA_OFFSET, counts[i]);
   }
 }
 
@@ -59,18 +53,23 @@ void mapperWork(int mapperPipe) {
 
 void reducerWork(int reducerPipe) {
   char buf;
-  // printf("reducer: %d\n", getpid());
+  int letter_as_int = ALPHA_OFFSET + reducerPipe;
+  char reducer_letter =  letter_as_int;
 
   // sleep(1);
   close(reducer_pipes[reducerPipe][WRITE_END]);
+  for(int i = 0; i < 26; i++) {
+    close(reducer_pipes[i][WRITE_END]);
+  }
 
   while(read(reducer_pipes[reducerPipe][READ_END], &buf, 1) > 0) {
     printf("REDUCER index: %d, REDUCER Char: %c\n", reducerPipe, buf);
-    counts[reducerPipe]++;
+    count++;
     // sleep(1);
   }
 
   close(reducer_pipes[reducerPipe][READ_END]);
+  printf("%c: %d\n", reducer_letter, count);
   exit(EXIT_SUCCESS);
 }
 
@@ -91,9 +90,12 @@ void doParent() {
     printf("Pid of reducer: %d\n", reducerPids[i]);
   }
 
-
   for(int i = 0; i < 4; i++) {
     waitpid(mapperPids[i], &status, WUNTRACED);
+  }
+
+  for(int i = 0; i < 26; i++) {
+    close(reducer_pipes[i][WRITE_END]);
   }
 }
 
