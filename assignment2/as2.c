@@ -52,7 +52,7 @@ void reducerWork(int reducerPipe) {
   int letter_as_int = ALPHA_OFFSET + reducerPipe;
   char reducer_letter = letter_as_int;
 
-  for(int i = 0; i < 26; i++) {
+  for(int i = 0; i < NUMBER_REDUCERS; i++) {
     close(reducer_pipes[i][WRITE_END]);
   }
 
@@ -67,21 +67,20 @@ void reducerWork(int reducerPipe) {
 }
 
 void doParent() {
-  int status;
+  // send 1 line to each mapper
   for(int i = 0; i < NUMBER_MAPPERS; i++) {
     close(mapper_pipes[i][READ_END]);
     write(mapper_pipes[i][WRITE_END], lines[i], strlen(lines[i])+1);
     close(mapper_pipes[i][WRITE_END]);
   }
 
-  for(int i = 0; i < NUMBER_MAPPERS; i++) {
-    waitpid(mapperPids[i], &status, WUNTRACED);
+  // close write ends to all reducer pipes
+  for(int i = 0; i < NUMBER_REDUCERS; i++) {
+    close(reducer_pipes[i][WRITE_END]);
   }
 
-  // for(int i = 0; i < NUMBER_REDUCERS; i++) {
-  //   waitpid(reducerPids[i], &status, WUNTRACED);
-  // }
-
+  // wait for all children to terminate
+  wait(NULL);
   exit(EXIT_SUCCESS);
 }
 
@@ -107,7 +106,7 @@ int main() {
 
   // create array of reducer pipes
   int reducerArrays;
-  for(reducerArrays = 0; reducerArrays < 26; reducerArrays++) {
+  for(reducerArrays = 0; reducerArrays < NUMBER_REDUCERS; reducerArrays++) {
     if(pipe(reducer_pipes[reducerArrays]) == -1) {
       perror("ERROR creating pipe!");
       exit(-1);
@@ -115,7 +114,7 @@ int main() {
   }
 
   // create mapper processes
-  for(int mapNum = 0; mapNum < 4; mapNum++) {
+  for(int mapNum = 0; mapNum < NUMBER_MAPPERS; mapNum++) {
     pid_t mchild = fork();
 
     if(mchild < 0) {
