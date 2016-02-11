@@ -9,7 +9,7 @@
 #define READ_END 0 // read end of the pipe
 #define WRITE_END 1 // write end of the pipe
 
-int mapper_pipes[2][2];
+int mapper_pipes[4][2];
 int reducer_pipes[26][2];
 char* lines[4] = {};
 char counts[LETTERS] = {0};
@@ -30,18 +30,16 @@ void printCounts() {
 
 void mapperWork(int mapperPipe) {
   char read_msg[BUFFER_SIZE];
-  int current_pipe;
-  printf("mapper: %d\n", getpid());
+  // printf("mapper: %d\n", getpid());
 
   // read the line
   close(mapper_pipes[mapperPipe][WRITE_END]);
   read(mapper_pipes[mapperPipe][READ_END], read_msg, BUFFER_SIZE);
-  printf("MAPPER %d: %s\n", mapperPipe, read_msg);
+  // printf("MAPPER %d: %s\n", getpid(), read_msg);
   close(mapper_pipes[mapperPipe][READ_END]);
 
   // send characters to the correct reducer
   for(int i = 0; i < strlen(read_msg); i++){
-      current_pipe = i;
       // if it is a lowercase letter, send to correct pipe
       if(read_msg[i] >= ALPHA_OFFSET && read_msg[i] < ALPHA_OFFSET + LETTERS){
         int p = read_msg[i] - ALPHA_OFFSET;
@@ -54,23 +52,22 @@ void mapperWork(int mapperPipe) {
       }
   }
 
-  close_reducer_pipes();
+  //close_reducer_pipes();
+  // printf("Mapper exit: %d\n", getpid());
   exit(EXIT_SUCCESS);
 }
 
 void reducerWork(int reducerPipe) {
   char buf;
-  printf("reducer: %d\n", getpid());
+  // printf("reducer: %d\n", getpid());
 
-  printf("Reducer Here!!");
-
-  sleep(1);
+  // sleep(1);
   close(reducer_pipes[reducerPipe][WRITE_END]);
 
   while(read(reducer_pipes[reducerPipe][READ_END], &buf, 1) > 0) {
     printf("REDUCER index: %d, REDUCER Char: %c\n", reducerPipe, buf);
     counts[reducerPipe]++;
-    sleep(1);
+    // sleep(1);
   }
 
   close(reducer_pipes[reducerPipe][READ_END]);
@@ -78,15 +75,29 @@ void reducerWork(int reducerPipe) {
 }
 
 void doParent() {
+  int status;
   for(int i = 0; i < 4; i++) {
     close(mapper_pipes[i][READ_END]);
+    //printf("Parent sending: %s\n", lines[i]);
     write(mapper_pipes[i][WRITE_END], lines[i], strlen(lines[i])+1);
     close(mapper_pipes[i][WRITE_END]);
+  }
+
+  for(int i = 0; i < 4; i++) {
+    printf("Pid of mapper: %d\n", mapperPids[i]);
+  }
+
+  for(int i = 0; i < 26; i++) {
+    printf("Pid of reducer: %d\n", reducerPids[i]);
+  }
+
+
+  for(int i = 0; i < 4; i++) {
+    waitpid(mapperPids[i], &status, WUNTRACED);
   }
 }
 
 int main() {
-  char read_msg[BUFFER_SIZE];
   char buffer[BUFFER_SIZE];
   FILE *input_file = fopen("input.txt", "r");
 
@@ -96,11 +107,11 @@ int main() {
     lines[line] = strdup(buffer);
     line++;
   }
+  fclose(input_file);
 
   // create array of mapper pipes
-  int mapperArrays;
-  for(mapperArrays = 0; mapperArrays < 4; mapperArrays++) {
-    if(pipe(mapper_pipes[mapperArrays]) == -1) {
+  for(int i = 0; i < 4; i++) {
+    if(pipe(mapper_pipes[i]) == -1) {
       perror("ERROR creating pipe!");
       exit(-1);
     }
@@ -116,44 +127,41 @@ int main() {
   }
 
   // create mapper processes
-  int mapNum;
-  for(mapNum = 0; mapNum < 4; mapNum++) {
-    pid_t child = fork();
+  for(int mapNum = 0; mapNum < 4; mapNum++) {
+    pid_t mchild = fork();
 
-    if(child < 0) {
+    if(mchild < 0) {
       perror("Error forking child");
       exit(-1);
     }
-    else if(child == 0) { // mapper process
+    else if(mchild == 0) { // mapper process
       int mapperPipe = mapNum;
       mapperWork(mapperPipe);
     }
     else { // parent
+      mapperPids[mapNum] = mchild;
     }
   }
 
   // create reducer processes
-  int redNum;
-  for(redNum = 0; redNum < 26; redNum++) {
-    pid_t child = fork();
+  for(int redNum = 0; redNum < 26; redNum++) {
+    pid_t rchild = fork();
 
-    if(child < 0) {
+    if(rchild < 0) {
       perror("Error forking child");
       exit(-1);
     }
-    else if(child == 0) { // reducer process
+    else if(rchild == 0) { // reducer process
       int reducerPipe = redNum;
       reducerWork(reducerPipe);
     }
     else { // parent
+      reducerPids[redNum] = rchild;
     }
   }
 
-  doParent();
-  for(int z = 0; z < 30; z++) {
-    wait(NULL);
-  }
   //printCounts();
+  doParent();
 
   return 1;
 }
