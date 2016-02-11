@@ -19,7 +19,8 @@ int mapperPids[NUMBER_MAPPERS];
 int reducerPids[NUMBER_REDUCERS];
 
 void close_reducer_pipes() {
-  for(int i = 0; i < NUMBER_REDUCERS; i++) {
+  int i;
+  for(i = 0; i < NUMBER_REDUCERS; i++) {
     close(reducer_pipes[i][WRITE_END]);
   }
 }
@@ -33,7 +34,8 @@ void mapperWork(int mapperPipe) {
   close(mapper_pipes[mapperPipe][READ_END]);
 
   // send characters to the correct reducer
-  for(int i = 0; i < strlen(read_msg); i++){
+  int i;
+  for(i = 0; i < strlen(read_msg); i++){
       // if it is a lowercase letter, send to correct pipe
       if(read_msg[i] >= ALPHA_OFFSET && read_msg[i] < ALPHA_OFFSET + LETTERS){
         int p = read_msg[i] - ALPHA_OFFSET;
@@ -52,7 +54,8 @@ void reducerWork(int reducerPipe) {
   int letter_as_int = ALPHA_OFFSET + reducerPipe;
   char reducer_letter = letter_as_int;
 
-  for(int i = 0; i < NUMBER_REDUCERS; i++) {
+  int i;
+  for(i = 0; i < NUMBER_REDUCERS; i++) {
     close(reducer_pipes[i][WRITE_END]);
   }
 
@@ -68,14 +71,16 @@ void reducerWork(int reducerPipe) {
 
 void doParent() {
   // send 1 line to each mapper
-  for(int i = 0; i < NUMBER_MAPPERS; i++) {
+  int i;
+  for(i = 0; i < NUMBER_MAPPERS; i++) {
     close(mapper_pipes[i][READ_END]);
     write(mapper_pipes[i][WRITE_END], lines[i], strlen(lines[i])+1);
     close(mapper_pipes[i][WRITE_END]);
   }
 
   // close write ends to all reducer pipes
-  for(int i = 0; i < NUMBER_REDUCERS; i++) {
+  int i;
+  for(i = 0; i < NUMBER_REDUCERS; i++) {
     close(reducer_pipes[i][WRITE_END]);
   }
 
@@ -97,7 +102,8 @@ int main() {
   fclose(input_file);
 
   // create array of mapper pipes
-  for(int i = 0; i < 4; i++) {
+  int i;
+  for(i = 0; i < 4; i++) {
     if(pipe(mapper_pipes[i]) == -1) {
       perror("ERROR creating pipe!");
       exit(-1);
@@ -114,7 +120,8 @@ int main() {
   }
 
   // create mapper processes
-  for(int mapNum = 0; mapNum < NUMBER_MAPPERS; mapNum++) {
+  int mapNum;
+  for(mapNum = 0; mapNum < NUMBER_MAPPERS; mapNum++) {
     pid_t mchild = fork();
 
     if(mchild < 0) {
@@ -131,7 +138,8 @@ int main() {
   }
 
   // create reducer processes
-  for(int redNum = 0; redNum < 26; redNum++) {
+  int redNum;
+  for(redNum = 0; redNum < 26; redNum++) {
     pid_t rchild = fork();
 
     if(rchild < 0) {
