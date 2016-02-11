@@ -8,28 +8,28 @@
 #define LETTERS 26 // letters in the alphabet
 #define READ_END 0 // read end of the pipe
 #define WRITE_END 1 // write end of the pipe
+#define NUMBER_MAPPERS 4 //there are 4 mappers
+#define NUMBER_REDUCERS 26 // there are 26 reducers, 1 for each letter
 
-int mapper_pipes[4][2];
-int reducer_pipes[26][2];
-char* lines[4] = {};
+int mapper_pipes[NUMBER_MAPPERS][2];
+int reducer_pipes[NUMBER_REDUCERS][2];
+char* lines[NUMBER_MAPPERS] = {};
 int count = 0;
-int mapperPids[4];
-int reducerPids[26];
+int mapperPids[NUMBER_MAPPERS];
+int reducerPids[NUMBER_REDUCERS];
 
 void close_reducer_pipes() {
-  for(int i = 0; i < 26; i++) {
+  for(int i = 0; i < NUMBER_REDUCERS; i++) {
     close(reducer_pipes[i][WRITE_END]);
   }
 }
 
 void mapperWork(int mapperPipe) {
   char read_msg[BUFFER_SIZE];
-  // printf("mapper: %d\n", getpid());
 
   // read the line
   close(mapper_pipes[mapperPipe][WRITE_END]);
   read(mapper_pipes[mapperPipe][READ_END], read_msg, BUFFER_SIZE);
-  // printf("MAPPER %d: %s\n", getpid(), read_msg);
   close(mapper_pipes[mapperPipe][READ_END]);
 
   // send characters to the correct reducer
@@ -39,33 +39,26 @@ void mapperWork(int mapperPipe) {
         int p = read_msg[i] - ALPHA_OFFSET;
         char letter = read_msg[i];
 
-        //printf("Sending: [%c]\n", letter);
-
         close(reducer_pipes[p][READ_END]);
         write(reducer_pipes[p][WRITE_END], &letter, 1);
       }
   }
 
-  //close_reducer_pipes();
-  // printf("Mapper exit: %d\n", getpid());
   exit(EXIT_SUCCESS);
 }
 
 void reducerWork(int reducerPipe) {
   char buf;
   int letter_as_int = ALPHA_OFFSET + reducerPipe;
-  char reducer_letter =  letter_as_int;
+  char reducer_letter = letter_as_int;
 
-  // sleep(1);
-  close(reducer_pipes[reducerPipe][WRITE_END]);
   for(int i = 0; i < 26; i++) {
     close(reducer_pipes[i][WRITE_END]);
   }
 
+  // increment the count of the character
   while(read(reducer_pipes[reducerPipe][READ_END], &buf, 1) > 0) {
-    printf("REDUCER index: %d, REDUCER Char: %c\n", reducerPipe, buf);
     count++;
-    // sleep(1);
   }
 
   close(reducer_pipes[reducerPipe][READ_END]);
@@ -75,28 +68,21 @@ void reducerWork(int reducerPipe) {
 
 void doParent() {
   int status;
-  for(int i = 0; i < 4; i++) {
+  for(int i = 0; i < NUMBER_MAPPERS; i++) {
     close(mapper_pipes[i][READ_END]);
-    //printf("Parent sending: %s\n", lines[i]);
     write(mapper_pipes[i][WRITE_END], lines[i], strlen(lines[i])+1);
     close(mapper_pipes[i][WRITE_END]);
   }
 
-  for(int i = 0; i < 4; i++) {
-    printf("Pid of mapper: %d\n", mapperPids[i]);
-  }
-
-  for(int i = 0; i < 26; i++) {
-    printf("Pid of reducer: %d\n", reducerPids[i]);
-  }
-
-  for(int i = 0; i < 4; i++) {
+  for(int i = 0; i < NUMBER_MAPPERS; i++) {
     waitpid(mapperPids[i], &status, WUNTRACED);
   }
 
-  for(int i = 0; i < 26; i++) {
-    close(reducer_pipes[i][WRITE_END]);
-  }
+  // for(int i = 0; i < NUMBER_REDUCERS; i++) {
+  //   waitpid(reducerPids[i], &status, WUNTRACED);
+  // }
+
+  exit(EXIT_SUCCESS);
 }
 
 int main() {
@@ -162,8 +148,6 @@ int main() {
     }
   }
 
-  //printCounts();
   doParent();
-
   return 1;
 }
