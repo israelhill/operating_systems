@@ -79,9 +79,9 @@ void doParent() {
   }
 
   // close write ends to all reducer pipes
-  int i;
-  for(i = 0; i < NUMBER_REDUCERS; i++) {
-    close(reducer_pipes[i][WRITE_END]);
+  int j;
+  for(j = 0; j < NUMBER_REDUCERS; j++) {
+    close(reducer_pipes[j][WRITE_END]);
   }
 
   // wait for all children to terminate
