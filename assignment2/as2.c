@@ -132,6 +132,11 @@ int main() {
   char buffer[BUFFER_SIZE];
   FILE *input_file = fopen("input.txt", "r");
 
+  if(input_file == NULL) {
+    perror("ERROR opening file!");
+    exit(errno);
+  }
+
   // write lines to an array
   int line = 0;
   while(fgets(buffer, BUFFER_SIZE, input_file) > 0) {
