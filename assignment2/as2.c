@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #define BUFFER_SIZE 1024
 #define ALPHA_OFFSET 97 // ascii code for "a"
@@ -18,32 +19,61 @@ int count = 0;
 int mapperPids[NUMBER_MAPPERS];
 int reducerPids[NUMBER_REDUCERS];
 
+void close_wrapper(int fd) {
+  if(close(fd) == -1) {
+    perror("Error closing file");
+    exit(errno);
+  }
+  // close(fd);
+}
+
 void close_reducer_pipes() {
   int i;
   for(i = 0; i < NUMBER_REDUCERS; i++) {
-    close(reducer_pipes[i][WRITE_END]);
+    close_wrapper(reducer_pipes[i][WRITE_END]);
+  }
+}
+
+void close_unused_mapper_pipes(int mapperPipe) {
+  int z;
+  for(int z = 0; z < NUMBER_MAPPERS; z++) {
+    if(z != mapperPipe) {
+      close_wrapper(mapper_pipes[z][READ_END]);
+      close_wrapper(mapper_pipes[z][WRITE_END]);
+    }
+    else {
+      close_wrapper(mapper_pipes[z][WRITE_END]);
+    }
   }
 }
 
 void mapperWork(int mapperPipe) {
   char read_msg[BUFFER_SIZE];
 
-  // read the line
-  close(mapper_pipes[mapperPipe][WRITE_END]);
+  close_unused_mapper_pipes(mapperPipe);
+
+  // read line sent from parent
   read(mapper_pipes[mapperPipe][READ_END], read_msg, BUFFER_SIZE);
-  close(mapper_pipes[mapperPipe][READ_END]);
+  close_wrapper(mapper_pipes[mapperPipe][READ_END]);
 
   // send characters to the correct reducer
   int i;
+  for(i = 0; i < NUMBER_REDUCERS; i++) {
+    close_wrapper(reducer_pipes[i][READ_END]);
+  }
+
   for(i = 0; i < strlen(read_msg); i++){
       // if it is a lowercase letter, send to correct pipe
       if(read_msg[i] >= ALPHA_OFFSET && read_msg[i] < ALPHA_OFFSET + LETTERS){
         int p = read_msg[i] - ALPHA_OFFSET;
         char letter = read_msg[i];
 
-        close(reducer_pipes[p][READ_END]);
         write(reducer_pipes[p][WRITE_END], &letter, 1);
       }
+  }
+
+  for(i = 0; i < NUMBER_REDUCERS; i++) {
+    close_wrapper(reducer_pipes[i][WRITE_END]);
   }
 
   exit(EXIT_SUCCESS);
@@ -56,7 +86,7 @@ void reducerWork(int reducerPipe) {
 
   int i;
   for(i = 0; i < NUMBER_REDUCERS; i++) {
-    close(reducer_pipes[i][WRITE_END]);
+    close_wrapper(reducer_pipes[i][WRITE_END]);
   }
 
   // increment the count of the character
@@ -64,7 +94,7 @@ void reducerWork(int reducerPipe) {
     count++;
   }
 
-  close(reducer_pipes[reducerPipe][READ_END]);
+  close_wrapper(reducer_pipes[reducerPipe][READ_END]);
   printf("%c: %d\n", reducer_letter, count);
   exit(EXIT_SUCCESS);
 }
@@ -73,15 +103,16 @@ void doParent() {
   // send 1 line to each mapper
   int i;
   for(i = 0; i < NUMBER_MAPPERS; i++) {
-    close(mapper_pipes[i][READ_END]);
+    close_wrapper(mapper_pipes[i][READ_END]);
     write(mapper_pipes[i][WRITE_END], lines[i], strlen(lines[i])+1);
-    close(mapper_pipes[i][WRITE_END]);
+    close_wrapper(mapper_pipes[i][WRITE_END]);
   }
 
-  // close write ends to all reducer pipes
+  // close write and read ends to all reducer pipes
   int j;
   for(j = 0; j < NUMBER_REDUCERS; j++) {
-    close(reducer_pipes[j][WRITE_END]);
+    close_wrapper(reducer_pipes[j][WRITE_END]);
+    close_wrapper(reducer_pipes[j][READ_END]);
   }
 
   // wait for all children to terminate
