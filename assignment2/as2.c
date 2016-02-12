@@ -16,15 +16,23 @@ int mapper_pipes[NUMBER_MAPPERS][2];
 int reducer_pipes[NUMBER_REDUCERS][2];
 char* lines[NUMBER_MAPPERS] = {};
 int count = 0;
-int mapperPids[NUMBER_MAPPERS];
-int reducerPids[NUMBER_REDUCERS];
 
 void close_wrapper(int fd) {
   if(close(fd) == -1) {
-    perror("Error closing file");
+    perror("ERROR closing pipe!");
     exit(errno);
   }
-  // close(fd);
+}
+
+int read_wrapper(int fd, void *buf, size_t count) {
+  int ret_val = read(fd, buf, count);
+  if(ret_val == -1) {
+    perror("ERROR reading from pipe!");
+    exit(errno);
+  }
+  else {
+    return ret_val;
+  }
 }
 
 void close_reducer_pipes() {
@@ -53,7 +61,7 @@ void mapperWork(int mapperPipe) {
   close_unused_mapper_pipes(mapperPipe);
 
   // read line sent from parent
-  read(mapper_pipes[mapperPipe][READ_END], read_msg, BUFFER_SIZE);
+  read_wrapper(mapper_pipes[mapperPipe][READ_END], read_msg, BUFFER_SIZE);
   close_wrapper(mapper_pipes[mapperPipe][READ_END]);
 
   // send characters to the correct reducer
@@ -90,7 +98,7 @@ void reducerWork(int reducerPipe) {
   }
 
   // increment the count of the character
-  while(read(reducer_pipes[reducerPipe][READ_END], &buf, 1) > 0) {
+  while(read_wrapper(reducer_pipes[reducerPipe][READ_END], &buf, 1) > 0) {
     count++;
   }
 
@@ -137,7 +145,7 @@ int main() {
   for(i = 0; i < 4; i++) {
     if(pipe(mapper_pipes[i]) == -1) {
       perror("ERROR creating pipe!");
-      exit(-1);
+      exit(errno);
     }
   }
 
@@ -146,7 +154,7 @@ int main() {
   for(reducerArrays = 0; reducerArrays < NUMBER_REDUCERS; reducerArrays++) {
     if(pipe(reducer_pipes[reducerArrays]) == -1) {
       perror("ERROR creating pipe!");
-      exit(-1);
+      exit(errno);
     }
   }
 
@@ -156,15 +164,14 @@ int main() {
     pid_t mchild = fork();
 
     if(mchild < 0) {
-      perror("Error forking child");
-      exit(-1);
+      perror("ERROR forking child");
+      exit(errno);
     }
     else if(mchild == 0) { // mapper process
       int mapperPipe = mapNum;
       mapperWork(mapperPipe);
     }
     else { // parent
-      mapperPids[mapNum] = mchild;
     }
   }
 
@@ -174,7 +181,7 @@ int main() {
     pid_t rchild = fork();
 
     if(rchild < 0) {
-      perror("Error forking child");
+      perror("ERROR forking child");
       exit(-1);
     }
     else if(rchild == 0) { // reducer process
@@ -182,7 +189,6 @@ int main() {
       reducerWork(reducerPipe);
     }
     else { // parent
-      reducerPids[redNum] = rchild;
     }
   }
 
