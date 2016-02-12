@@ -44,7 +44,7 @@ void close_reducer_pipes() {
 
 void close_unused_mapper_pipes(int mapperPipe) {
   int z;
-  for(int z = 0; z < NUMBER_MAPPERS; z++) {
+  for(z = 0; z < NUMBER_MAPPERS; z++) {
     if(z != mapperPipe) {
       close_wrapper(mapper_pipes[z][READ_END]);
       close_wrapper(mapper_pipes[z][WRITE_END]);
