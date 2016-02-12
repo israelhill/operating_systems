@@ -128,58 +128,7 @@ void doParent() {
   exit(EXIT_SUCCESS);
 }
 
-int main() {
-  char buffer[BUFFER_SIZE];
-  FILE *input_file = fopen("input.txt", "r");
-
-  if(input_file == NULL) {
-    perror("ERROR opening file!");
-    exit(errno);
-  }
-
-  // write lines to an array
-  int line = 0;
-  while(fgets(buffer, BUFFER_SIZE, input_file) > 0) {
-    lines[line] = strdup(buffer);
-    line++;
-  }
-  fclose(input_file);
-
-  // create array of mapper pipes
-  int i;
-  for(i = 0; i < 4; i++) {
-    if(pipe(mapper_pipes[i]) == -1) {
-      perror("ERROR creating pipe!");
-      exit(errno);
-    }
-  }
-
-  // create array of reducer pipes
-  int reducerArrays;
-  for(reducerArrays = 0; reducerArrays < NUMBER_REDUCERS; reducerArrays++) {
-    if(pipe(reducer_pipes[reducerArrays]) == -1) {
-      perror("ERROR creating pipe!");
-      exit(errno);
-    }
-  }
-
-  // create mapper processes
-  int mapNum;
-  for(mapNum = 0; mapNum < NUMBER_MAPPERS; mapNum++) {
-    pid_t mchild = fork();
-
-    if(mchild < 0) {
-      perror("ERROR forking child");
-      exit(errno);
-    }
-    else if(mchild == 0) { // mapper process
-      int mapperPipe = mapNum;
-      mapperWork(mapperPipe);
-    }
-    else { // parent
-    }
-  }
-
+void create_reducers() {
   // create reducer processes
   int redNum;
   for(redNum = 0; redNum < 26; redNum++) {
@@ -196,7 +145,69 @@ int main() {
     else { // parent
     }
   }
+}
 
+void create_mappers() {
+  // create mapper processes
+  int mapNum;
+  for(mapNum = 0; mapNum < NUMBER_MAPPERS; mapNum++) {
+    pid_t mchild = fork();
+
+    if(mchild < 0) {
+      perror("ERROR forking child");
+      exit(errno);
+    }
+    else if(mchild == 0) { // mapper process
+      int mapperPipe = mapNum;
+      mapperWork(mapperPipe);
+    }
+    else { // parent
+    }
+  }
+}
+
+void create_pipes() {
+  // create array of mapper pipes
+  int i;
+  for(i = 0; i < 4; i++) {
+    if(pipe(mapper_pipes[i]) == -1) {
+      perror("ERROR creating pipe!");
+      exit(errno);
+    }
+  }
+
+  // create array of reducer pipes
+  for(i = 0; i < NUMBER_REDUCERS; i++) {
+    if(pipe(reducer_pipes[i]) == -1) {
+      perror("ERROR creating pipe!");
+      exit(errno);
+    }
+  }
+}
+
+void read_lines() {
+  char buffer[BUFFER_SIZE];
+  FILE *input_file = fopen("input.txt", "r");
+
+  if(input_file == NULL) {
+    perror("ERROR opening file!");
+    exit(errno);
+  }
+
+  // write lines to an array
+  int line = 0;
+  while(fgets(buffer, BUFFER_SIZE, input_file) > 0) {
+    lines[line] = strdup(buffer);
+    line++;
+  }
+  fclose(input_file);
+}
+
+int main() {
+  read_lines();
+  create_pipes();
+  create_mappers();
+  create_reducers();
   doParent();
   return 1;
 }
