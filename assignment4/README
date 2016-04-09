@@ -1,0 +1,23 @@
+Israel Hill (idh@case.edu)
+EECS 338: Operating Systems and Concurrent Programming
+
+To run:
+	$ make
+	$ make run
+
+Once the program is running, the parent process will generate 25 Carbon threads
+followed by 100 Hydrogen processes. Each of the threads will wait at a barrier until
+there is enough of them to create a Methane molecule. One thread will print,
+"Crossed barrier, created Methane!" and terminate. The other 4 threads will
+terminate without printing. 
+
+As each atoms reaches the barrier, the count of each atom waiting will be printed
+such as: C: 0 | H: 2. When the final atom required to create a Methane arrives, 
+the count will not be printed. Instead, the thread will cross the barrier and print
+"Crossed barrier, created Methane!".
+
+The parent will wait for all the threads to terminate, then it will exit.
+
+Clean Up:
+	$ make clean
+
